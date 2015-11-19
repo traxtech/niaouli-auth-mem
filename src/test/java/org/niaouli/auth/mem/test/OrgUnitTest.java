@@ -17,8 +17,10 @@
 package org.niaouli.auth.mem.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
 import org.junit.Test;
 import org.niaouli.auth.OrgUnit;
+import org.niaouli.auth.OrgUnitBuilder;
 import org.niaouli.auth.mem.MemAuthSystem;
 import org.niaouli.exception.AppException;
 
@@ -30,15 +32,25 @@ public class OrgUnitTest {
 
     private static final String MARKETING = "Marketing";
 
+    private MemAuthSystem authSystem;
+
+    @Before
+    public void before() {
+        authSystem = new MemAuthSystem();
+    }
+
     @Test
     public void testNominal() throws AppException {
-        MemAuthSystem memAuthSystem = new MemAuthSystem();
-        assertThat(memAuthSystem.canCreateOrUpdateOrgUnit()).isTrue();
-        OrgUnit ou = new OrgUnit();
-        ou.setName(MARKETING);
-        memAuthSystem.createOrgUnit(ou);
-        ou = memAuthSystem.loadOrgUnit(MARKETING);
+        assertThat(authSystem.canCreateOrUpdateOrgUnit()).isTrue();
+        createOrgUnit(MARKETING);
+        OrgUnit ou = authSystem.loadOrgUnit(MARKETING);
         assertThat(ou).isNotNull();
-        assertThat(memAuthSystem.findOrgUnits()).are(new OrgUnitNameCondition(MARKETING));
+        assertThat(authSystem.findOrgUnits()).are(new OrgUnitNameCondition(MARKETING));
+    }
+
+    private void createOrgUnit(String name) throws AppException {
+        OrgUnitBuilder builder = new OrgUnitBuilder();
+        builder.setName(name);
+        authSystem.createOrgUnit(builder.build());
     }
 }

@@ -18,8 +18,10 @@ package org.niaouli.auth.mem.test;
 
 import java.util.Collection;
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
 import org.junit.Test;
 import org.niaouli.auth.Person;
+import org.niaouli.auth.PersonBuilder;
 import org.niaouli.auth.mem.MemAuthSystem;
 import org.niaouli.exception.AppException;
 
@@ -31,39 +33,39 @@ public class PersonTest {
 
     private static final String JOHN = "JOHN";
     private static final String LUC = "LUC";
+    private static final String FULLNAME = "Someone's name";
+
     private static final char[] PWD1 = "x!m141M".toCharArray();
     private static final char[] PWD2 = "POOl::k".toCharArray();
     private static final char[] EMPTY = new char[]{};
 
+    private MemAuthSystem authSystem;
+
+    @Before
+    public void before() {
+        authSystem = new MemAuthSystem();
+    }
+
     @Test
     public void testHealth() throws AppException {
-        MemAuthSystem memAuthSystem = new MemAuthSystem();
-        assertThat(memAuthSystem.checkHealth()).isTrue();
+        assertThat(authSystem.checkHealth()).isTrue();
     }
 
     @Test
     public void testNominal() throws AppException {
-        MemAuthSystem memAuthSystem = new MemAuthSystem();
-        assertThat(memAuthSystem.canCreateOrUpdatePerson()).isTrue();
-        Person person = new Person();
-        person.setSysName(JOHN);
-        memAuthSystem.createPerson(person);
-        person = memAuthSystem.loadPerson(JOHN);
+        assertThat(authSystem.canCreateOrUpdatePerson()).isTrue();
+        createPerson(JOHN);
+        Person person = authSystem.loadPerson(JOHN);
         assertThat(person).isNotNull();
-        assertThat(memAuthSystem.findPersons()).are(new PersonSysNameCondition(JOHN));
+        assertThat(authSystem.findPersons()).are(new PersonSysNameCondition(JOHN));
     }
 
     @Test
     public void testMultiple() throws AppException {
-        MemAuthSystem memAuthSystem = new MemAuthSystem();
-        assertThat(memAuthSystem.canCreateOrUpdatePerson()).isTrue();
-        Person person = new Person();
-        person.setSysName(JOHN);
-        memAuthSystem.createPerson(person);
-        person = new Person();
-        person.setSysName(LUC);
-        memAuthSystem.createPerson(person);
-        Collection<Person> allPersons = memAuthSystem.findPersons();
+        assertThat(authSystem.canCreateOrUpdatePerson()).isTrue();
+        createPerson(JOHN);
+        createPerson(LUC);
+        Collection<Person> allPersons = authSystem.findPersons();
         assertThat(allPersons).hasSize(2);
         assertThat(allPersons).areExactly(1, new PersonSysNameCondition(JOHN));
         assertThat(allPersons).areExactly(1, new PersonSysNameCondition(LUC));
@@ -71,50 +73,54 @@ public class PersonTest {
 
     @Test(expected = AppException.class)
     public void testDuplicate() throws AppException {
-        MemAuthSystem memAuthSystem = new MemAuthSystem();
-        Person person = new Person();
-        person.setSysName(JOHN);
-        memAuthSystem.createPerson(person);
-        memAuthSystem.createPerson(person);
+        createPerson(JOHN);
+        createPerson(JOHN);
+    }
+
+    @Test
+    public void testUpdate() throws AppException {
+        createPerson(JOHN);
+        PersonBuilder builder = new PersonBuilder(authSystem.loadPerson(JOHN));
+        builder.setFullName(FULLNAME);
+        authSystem.updatePerson(builder.build());
+        assertThat(authSystem.loadPerson(JOHN).getFullName()).isEqualTo(FULLNAME);
     }
 
     @Test
     public void testPasswordNominal() throws AppException {
-        MemAuthSystem memAuthSystem = new MemAuthSystem();
-        assertThat(memAuthSystem.canCreateOrUpdatePerson()).isTrue();
-        Person person = new Person();
-        person.setSysName(JOHN);
-        memAuthSystem.createPerson(person);
-        assertThat(memAuthSystem.canUpdatePassword()).isTrue();
-        memAuthSystem.updatePersonPassword(JOHN, PWD1);
-        assertThat(memAuthSystem.checkCredentials(JOHN, PWD1)).isTrue();
-        assertThat(memAuthSystem.checkCredentials(JOHN, PWD2)).isFalse();
-        memAuthSystem.updatePersonPassword(JOHN, PWD2);
-        assertThat(memAuthSystem.checkCredentials(JOHN, PWD1)).isFalse();
-        assertThat(memAuthSystem.checkCredentials(JOHN, PWD2)).isTrue();
+        createPerson(JOHN);
+        assertThat(authSystem.canUpdatePassword()).isTrue();
+        authSystem.updatePersonPassword(JOHN, PWD1);
+        assertThat(authSystem.checkCredentials(JOHN, PWD1)).isTrue();
+        assertThat(authSystem.checkCredentials(JOHN, PWD2)).isFalse();
+        authSystem.updatePersonPassword(JOHN, PWD2);
+        assertThat(authSystem.checkCredentials(JOHN, PWD1)).isFalse();
+        assertThat(authSystem.checkCredentials(JOHN, PWD2)).isTrue();
     }
 
     @Test(expected = AppException.class)
     public void testPasswordNoPerson() throws AppException {
-        MemAuthSystem memAuthSystem = new MemAuthSystem();
-        memAuthSystem.updatePersonPassword(JOHN, PWD1);
+        authSystem.updatePersonPassword(JOHN, PWD1);
     }
 
     public void testCheckCredentials() throws AppException {
-        MemAuthSystem memAuthSystem = new MemAuthSystem();
-        Person person = new Person();
-        person.setSysName(JOHN);
-        memAuthSystem.createPerson(person);
-        assertThat(memAuthSystem.checkCredentials(null, null)).isFalse();
-        assertThat(memAuthSystem.checkCredentials("", null)).isFalse();
-        assertThat(memAuthSystem.checkCredentials(null, EMPTY)).isFalse();
-        assertThat(memAuthSystem.checkCredentials("", EMPTY)).isFalse();
-        assertThat(memAuthSystem.checkCredentials(JOHN, null)).isFalse();
-        assertThat(memAuthSystem.checkCredentials(JOHN, EMPTY)).isFalse();
-        memAuthSystem.updatePersonPassword(JOHN, PWD1);
-        assertThat(memAuthSystem.checkCredentials(JOHN, null)).isFalse();
-        assertThat(memAuthSystem.checkCredentials(JOHN, EMPTY)).isFalse();
-        assertThat(memAuthSystem.checkCredentials(JOHN, PWD2)).isFalse();
-        assertThat(memAuthSystem.checkCredentials(JOHN, PWD1)).isTrue();
+        createPerson(JOHN);
+        assertThat(authSystem.checkCredentials(null, null)).isFalse();
+        assertThat(authSystem.checkCredentials("", null)).isFalse();
+        assertThat(authSystem.checkCredentials(null, EMPTY)).isFalse();
+        assertThat(authSystem.checkCredentials("", EMPTY)).isFalse();
+        assertThat(authSystem.checkCredentials(JOHN, null)).isFalse();
+        assertThat(authSystem.checkCredentials(JOHN, EMPTY)).isFalse();
+        authSystem.updatePersonPassword(JOHN, PWD1);
+        assertThat(authSystem.checkCredentials(JOHN, null)).isFalse();
+        assertThat(authSystem.checkCredentials(JOHN, EMPTY)).isFalse();
+        assertThat(authSystem.checkCredentials(JOHN, PWD2)).isFalse();
+        assertThat(authSystem.checkCredentials(JOHN, PWD1)).isTrue();
+    }
+
+    private void createPerson(String sysName) throws AppException {
+        PersonBuilder builder = new PersonBuilder();
+        builder.setSysName(sysName);
+        authSystem.createPerson(builder.build());
     }
 }

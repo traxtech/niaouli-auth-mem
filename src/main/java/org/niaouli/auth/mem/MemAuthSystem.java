@@ -47,7 +47,7 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     private final Map<String, Group> groups = new HashMap<String, Group>();
 
     /**
-     * Persons system names set per group system name
+     * Persons system names set per group system name.
      */
     private final Map<String, Set<String>> groupsPersons
             = new HashMap<String, Set<String>>();
@@ -57,12 +57,6 @@ public class MemAuthSystem implements AuthSystem, Serializable {
      */
     private final Map<String, OrgUnit> orgUnits
             = new HashMap<String, OrgUnit>();
-
-    /**
-     * Persons system names set per organizational unit name.
-     */
-    private final Map<String, Set<String>> orgUnitsPersons
-            = new HashMap<String, Set<String>>();
 
     /**
      * All passwords, mapped by their person system names.

@@ -21,7 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.niaouli.auth.Group;
-import org.niaouli.auth.Person;
+import org.niaouli.auth.GroupBuilder;
+import org.niaouli.auth.PersonBuilder;
 import org.niaouli.auth.mem.MemAuthSystem;
 import org.niaouli.exception.AppException;
 
@@ -36,6 +37,8 @@ public class GroupTest {
 
     private static final String IT = "IT";
     private static final String AUDIT = "AUDIT";
+
+    private static final String DESCRIPTION = "Something here...";
 
     private MemAuthSystem authSystem;
 
@@ -67,6 +70,15 @@ public class GroupTest {
     public void testDuplicate() throws AppException {
         createGroup(IT);
         createGroup(IT);
+    }
+
+    @Test
+    public void testUpdate() throws AppException {
+        createGroup(IT);
+        GroupBuilder builder = new GroupBuilder(authSystem.loadGroup(IT));
+        builder.setDescription(DESCRIPTION);
+        authSystem.updateGroup(builder.build());
+        assertThat(authSystem.loadGroup(IT).getDescription()).isEqualTo(DESCRIPTION);
     }
 
     @Test
@@ -103,15 +115,15 @@ public class GroupTest {
     }
 
     private void createGroup(String sysName) throws AppException {
-        Group group = new Group();
-        group.setSysName(sysName);
-        authSystem.createGroup(group);
+        GroupBuilder builder = new GroupBuilder();
+        builder.setSysName(sysName);
+        authSystem.createGroup(builder.build());
     }
 
     private void createPerson(String sysName) throws AppException {
-        Person person = new Person();
-        person.setSysName(sysName);
-        authSystem.createPerson(person);
+        PersonBuilder builder = new PersonBuilder();
+        builder.setSysName(sysName);
+        authSystem.createPerson(builder.build());
     }
 
 }
