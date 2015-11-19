@@ -26,6 +26,8 @@ import org.niaouli.auth.AuthSystem;
 import org.niaouli.auth.Group;
 import org.niaouli.auth.OrgUnit;
 import org.niaouli.auth.Person;
+import org.niaouli.exception.AppException;
+import org.niaouli.validation.Validation;
 
 /**
  *
@@ -48,15 +50,20 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
-    public boolean checkCredentials(String sysName, char[] password) {
+    public boolean checkCredentials(String sysName, char[] password) throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(sysName).inField("sysName").isNotEmpty();
+        validation.finish();
         return passwords.containsKey(sysName) && Arrays.equals(passwords.get(sysName), password);
     }
 
     @Override
-    public Person loadPerson(String sysName) {
-        if (sysName == null || !persons.containsKey(sysName)) {
-            throw new RuntimeException("Invalid person system");
-        }
+    public Person loadPerson(String sysName) throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(sysName).inField("sysName")
+                .isNotEmpty()
+                .isInMapKeys(persons);
+        validation.finish();
         return persons.get(sysName);
     }
 
@@ -76,31 +83,42 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
-    public void createPerson(Person person) {
-        updatePerson(person);
-    }
-
-    @Override
-    public void updatePerson(Person person) {
-        if (person.getSysName() == null || persons.containsKey(person.getSysName())) {
-            throw new RuntimeException("Invalid or already used system name");
-        }
+    public void createPerson(Person person) throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(person.getSysName()).inField("person.sysName")
+                .isNotEmpty()
+                .isNotInMapKeys(persons);
+        validation.finish();
         persons.put(person.getSysName(), person);
     }
 
     @Override
-    public void updatePersonPassword(String sysName, char[] password) {
-        if (sysName == null || !persons.containsKey(sysName)) {
-            throw new RuntimeException("Invalid or already used system name");
-        }
+    public void updatePerson(Person person) throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(person.getSysName()).inField("person.sysName")
+                .isNotEmpty()
+                .isInMapKeys(persons);
+        validation.finish();
+        persons.put(person.getSysName(), person);
+    }
+
+    @Override
+    public void updatePersonPassword(String sysName, char[] password) throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(sysName).inField("sysName")
+                .isNotEmpty()
+                .isInMapKeys(persons);
+        validation.finish();
         passwords.put(sysName, password);
     }
 
     @Override
-    public Group loadGroup(String sysName) {
-        if (sysName == null || !groups.containsKey(sysName)) {
-            throw new RuntimeException("Invalid person system");
-        }
+    public Group loadGroup(String sysName) throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(sysName).inField("sysName")
+                .isNotEmpty()
+                .isInMapKeys(groups);
+        validation.finish();
         return groups.get(sysName);
     }
 
@@ -115,23 +133,32 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
-    public void createGroup(Group group) {
-        updateGroup(group);
-    }
-
-    @Override
-    public void updateGroup(Group group) {
-        if (group.getSysName() == null || groups.containsKey(group.getSysName())) {
-            throw new RuntimeException("Invalid or already used system name");
-        }
+    public void createGroup(Group group) throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(group.getSysName()).inField("group.sysName")
+                .isNotEmpty()
+                .isNotInMapKeys(groups);
+        validation.finish();
         groups.put(group.getSysName(), group);
     }
 
     @Override
-    public OrgUnit loadOrgUnit(String name) {
-        if (name == null || !orgUnits.containsKey(name)) {
-            throw new RuntimeException("Invalid person system");
-        }
+    public void updateGroup(Group group) throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(group.getSysName()).inField("group.sysName")
+                .isNotEmpty()
+                .isInMapKeys(groups);
+        validation.finish();
+        groups.put(group.getSysName(), group);
+    }
+
+    @Override
+    public OrgUnit loadOrgUnit(String name) throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(name).inField("name")
+                .isNotEmpty()
+                .isInMapKeys(orgUnits);
+        validation.finish();
         return orgUnits.get(name);
     }
 
@@ -146,15 +173,22 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
-    public void createOrgUnit(OrgUnit orgUnit) {
-        updateOrgUnit(orgUnit);
+    public void createOrgUnit(OrgUnit orgUnit) throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(orgUnit.getName()).inField("orgUnit.name")
+                .isNotEmpty()
+                .isNotInMapKeys(orgUnits);
+        validation.finish();
+        orgUnits.put(orgUnit.getName(), orgUnit);
     }
 
     @Override
-    public void updateOrgUnit(OrgUnit orgUnit) {
-        if (orgUnit.getName() == null || groups.containsKey(orgUnit.getName())) {
-            throw new RuntimeException("Invalid or already used name");
-        }
+    public void updateOrgUnit(OrgUnit orgUnit) throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(orgUnit.getName()).inField("orgUnit.name")
+                .isNotEmpty()
+                .isInMapKeys(orgUnits);
+        validation.finish();
         orgUnits.put(orgUnit.getName(), orgUnit);
     }
 

@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.niaouli.auth.Person;
 import org.niaouli.auth.mem.MemAuthSystem;
+import org.niaouli.exception.AppException;
 
 /**
  *
@@ -34,7 +35,7 @@ public class PersonTest {
     private static final String PWD2 = "POOl::k";
 
     @Test
-    public void testNominal() {
+    public void testNominal() throws AppException {
         MemAuthSystem memAuthSystem = new MemAuthSystem();
         assertThat(memAuthSystem.canCreateOrUpdatePerson()).isTrue();
         Person person = new Person();
@@ -46,7 +47,7 @@ public class PersonTest {
     }
 
     @Test
-    public void testMultiple() {
+    public void testMultiple() throws AppException {
         MemAuthSystem memAuthSystem = new MemAuthSystem();
         assertThat(memAuthSystem.canCreateOrUpdatePerson()).isTrue();
         Person person = new Person();
@@ -62,8 +63,8 @@ public class PersonTest {
         assertThat(allPersons).areExactly(1, new PersonSysNameCondition(LUC));
     }
 
-    @Test(expected = RuntimeException.class)
-    public void testDuplicate() {
+    @Test(expected = AppException.class)
+    public void testDuplicate() throws AppException {
         MemAuthSystem memAuthSystem = new MemAuthSystem();
         Person person = new Person();
         person.setSysName(JOHN);
@@ -72,7 +73,7 @@ public class PersonTest {
     }
 
     @Test
-    public void testPasswordNominal() {
+    public void testPasswordNominal() throws AppException {
         MemAuthSystem memAuthSystem = new MemAuthSystem();
         assertThat(memAuthSystem.canCreateOrUpdatePerson()).isTrue();
         Person person = new Person();
@@ -86,8 +87,8 @@ public class PersonTest {
         assertThat(memAuthSystem.checkCredentials(JOHN, PWD2.toCharArray())).isTrue();
     }
 
-    @Test(expected = RuntimeException.class)
-    public void testPasswordNoPerson() {
+    @Test(expected = AppException.class)
+    public void testPasswordNoPerson() throws AppException {
         MemAuthSystem memAuthSystem = new MemAuthSystem();
         memAuthSystem.updatePersonPassword(JOHN, PWD1.toCharArray());
     }
