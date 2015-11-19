@@ -21,7 +21,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.niaouli.auth.AuthSystem;
 import org.niaouli.auth.Group;
 import org.niaouli.auth.OrgUnit;
@@ -38,19 +40,34 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     /**
      * All persons, mapped by their system names.
      */
-    private final Map<String, Person> persons = new HashMap<>();
+    private final Map<String, Person> persons = new HashMap<String, Person>();
     /**
      * All groups, mapped by their system names.
      */
-    private final Map<String, Group> groups = new HashMap<>();
+    private final Map<String, Group> groups = new HashMap<String, Group>();
+
+    /**
+     * Persons system names set per group system name
+     */
+    private final Map<String, Set<String>> groupsPersons
+            = new HashMap<String, Set<String>>();
+
     /**
      * All organizational units, mapped by their names.
      */
-    private final Map<String, OrgUnit> orgUnits = new HashMap<>();
+    private final Map<String, OrgUnit> orgUnits
+            = new HashMap<String, OrgUnit>();
+
+    /**
+     * Persons system names set per organizational unit name.
+     */
+    private final Map<String, Set<String>> orgUnitsPersons
+            = new HashMap<String, Set<String>>();
+
     /**
      * All passwords, mapped by their person system names.
      */
-    private final Map<String, char[]> passwords = new HashMap<>();
+    private final Map<String, char[]> passwords = new HashMap<String, char[]>();
 
     @Override
     public final void configure(final Map<String, String> props) {
@@ -143,6 +160,57 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
+    public final Collection<String> findGroupPersons(final String sysName)
+            throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(sysName).inField("sysName")
+                .isNotBlank()
+                .isInMapKeys(groups);
+        validation.finish();
+        if (groupsPersons.containsKey(sysName)) {
+            return Collections.unmodifiableSet(groupsPersons.get(sysName));
+        } else {
+            return Collections.unmodifiableSet(new HashSet<String>());
+        }
+    }
+
+    @Override
+    public final void attachGroupMember(final String groupSysName,
+            final String personSysName) throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(groupSysName).inField("groupSysName")
+                .isNotBlank()
+                .isInMapKeys(groups);
+        validation.verifyThat(personSysName).inField("personSysName")
+                .isNotBlank()
+                .isInMapKeys(persons);
+        validation.finish();
+        if (groupsPersons.containsKey(groupSysName)) {
+            groupsPersons.get(groupSysName).add(personSysName);
+        } else {
+            Set<String> initMembers = new HashSet<String>();
+            initMembers.add(personSysName);
+            groupsPersons.put(groupSysName, initMembers);
+        }
+    }
+
+    @Override
+    public final void detachGroupMember(final String groupSysName,
+            final String personSysName) throws AppException {
+        Validation validation = new Validation();
+        validation.verifyThat(groupSysName).inField("groupSysName")
+                .isNotBlank()
+                .isInMapKeys(groups);
+        validation.verifyThat(personSysName).inField("personSysName")
+                .isNotBlank()
+                .isInMapKeys(persons);
+        validation.finish();
+        if (groupsPersons.containsKey(groupSysName)) {
+            groupsPersons.get(groupSysName).remove(personSysName);
+        }
+    }
+
+    @Override
     public final boolean canCreateOrUpdateGroup() {
         return true;
     }
@@ -180,6 +248,18 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     @Override
     public final Collection<OrgUnit> findOrgUnits() {
         return Collections.unmodifiableCollection(orgUnits.values());
+    }
+
+    @Override
+    public final Collection<String> findOrgUnitPersons(final String name)
+            throws AppException {
+        Set<String> attachedPersons = new HashSet<String>();
+        for (Person person : persons.values()) {
+            if (person.getOrgUnitName().equals(name)) {
+                attachedPersons.add(person.getSysName());
+            }
+        }
+        return Collections.unmodifiableCollection(attachedPersons);
     }
 
     @Override

@@ -63,7 +63,6 @@ public class PersonTest {
         person = new Person();
         person.setSysName(LUC);
         memAuthSystem.createPerson(person);
-        assertThat(person).isNotNull();
         Collection<Person> allPersons = memAuthSystem.findPersons();
         assertThat(allPersons).hasSize(2);
         assertThat(allPersons).areExactly(1, new PersonSysNameCondition(JOHN));
