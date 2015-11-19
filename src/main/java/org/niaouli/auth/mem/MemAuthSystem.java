@@ -35,30 +35,44 @@ import org.niaouli.validation.Validation;
  */
 public class MemAuthSystem implements AuthSystem, Serializable {
 
+    /**
+     * All persons, mapped by their system names.
+     */
     private final Map<String, Person> persons = new HashMap<>();
+    /**
+     * All groups, mapped by their system names.
+     */
     private final Map<String, Group> groups = new HashMap<>();
+    /**
+     * All organizational units, mapped by their names.
+     */
     private final Map<String, OrgUnit> orgUnits = new HashMap<>();
+    /**
+     * All passwords, mapped by their person system names.
+     */
     private final Map<String, char[]> passwords = new HashMap<>();
 
     @Override
-    public void configure(Map<String, String> props) {
+    public final void configure(final Map<String, String> props) {
     }
 
     @Override
-    public boolean checkHealth() {
+    public final boolean checkHealth() {
         return true;
     }
 
     @Override
-    public boolean checkCredentials(String sysName, char[] password) throws AppException {
+    public final boolean checkCredentials(final String sysName,
+            final char[] password) throws AppException {
         Validation validation = new Validation();
         validation.verifyThat(sysName).inField("sysName").isNotEmpty();
         validation.finish();
-        return passwords.containsKey(sysName) && Arrays.equals(passwords.get(sysName), password);
+        return passwords.containsKey(sysName)
+                && Arrays.equals(passwords.get(sysName), password);
     }
 
     @Override
-    public Person loadPerson(String sysName) throws AppException {
+    public final Person loadPerson(final String sysName) throws AppException {
         Validation validation = new Validation();
         validation.verifyThat(sysName).inField("sysName")
                 .isNotEmpty()
@@ -68,22 +82,22 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
-    public Collection<Person> findPersons() {
+    public final Collection<Person> findPersons() {
         return Collections.unmodifiableCollection(persons.values());
     }
 
     @Override
-    public boolean canCreateOrUpdatePerson() {
+    public final boolean canCreateOrUpdatePerson() {
         return true;
     }
 
     @Override
-    public boolean canUpdatePassword() {
+    public final boolean canUpdatePassword() {
         return true;
     }
 
     @Override
-    public void createPerson(Person person) throws AppException {
+    public final void createPerson(final Person person) throws AppException {
         Validation validation = new Validation();
         validation.verifyThat(person.getSysName()).inField("person.sysName")
                 .isNotEmpty()
@@ -93,7 +107,7 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
-    public void updatePerson(Person person) throws AppException {
+    public final void updatePerson(final Person person) throws AppException {
         Validation validation = new Validation();
         validation.verifyThat(person.getSysName()).inField("person.sysName")
                 .isNotEmpty()
@@ -103,7 +117,8 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
-    public void updatePersonPassword(String sysName, char[] password) throws AppException {
+    public final void updatePersonPassword(final String sysName,
+            final char[] password) throws AppException {
         Validation validation = new Validation();
         validation.verifyThat(sysName).inField("sysName")
                 .isNotEmpty()
@@ -113,7 +128,7 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
-    public Group loadGroup(String sysName) throws AppException {
+    public final Group loadGroup(final String sysName) throws AppException {
         Validation validation = new Validation();
         validation.verifyThat(sysName).inField("sysName")
                 .isNotEmpty()
@@ -123,17 +138,17 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
-    public Collection<Group> findGroups() {
+    public final Collection<Group> findGroups() {
         return Collections.unmodifiableCollection(groups.values());
     }
 
     @Override
-    public boolean canCreateOrUpdateGroup() {
+    public final boolean canCreateOrUpdateGroup() {
         return true;
     }
 
     @Override
-    public void createGroup(Group group) throws AppException {
+    public final void createGroup(final Group group) throws AppException {
         Validation validation = new Validation();
         validation.verifyThat(group.getSysName()).inField("group.sysName")
                 .isNotEmpty()
@@ -143,7 +158,7 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
-    public void updateGroup(Group group) throws AppException {
+    public final void updateGroup(final Group group) throws AppException {
         Validation validation = new Validation();
         validation.verifyThat(group.getSysName()).inField("group.sysName")
                 .isNotEmpty()
@@ -153,7 +168,7 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
-    public OrgUnit loadOrgUnit(String name) throws AppException {
+    public final OrgUnit loadOrgUnit(final String name) throws AppException {
         Validation validation = new Validation();
         validation.verifyThat(name).inField("name")
                 .isNotEmpty()
@@ -163,17 +178,17 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
-    public Collection<OrgUnit> findOrgUnits() {
+    public final Collection<OrgUnit> findOrgUnits() {
         return Collections.unmodifiableCollection(orgUnits.values());
     }
 
     @Override
-    public boolean canCreateOrUpdateOrgUnit() {
+    public final boolean canCreateOrUpdateOrgUnit() {
         return true;
     }
 
     @Override
-    public void createOrgUnit(OrgUnit orgUnit) throws AppException {
+    public final void createOrgUnit(final OrgUnit orgUnit) throws AppException {
         Validation validation = new Validation();
         validation.verifyThat(orgUnit.getName()).inField("orgUnit.name")
                 .isNotEmpty()
@@ -183,7 +198,7 @@ public class MemAuthSystem implements AuthSystem, Serializable {
     }
 
     @Override
-    public void updateOrgUnit(OrgUnit orgUnit) throws AppException {
+    public final void updateOrgUnit(final OrgUnit orgUnit) throws AppException {
         Validation validation = new Validation();
         validation.verifyThat(orgUnit.getName()).inField("orgUnit.name")
                 .isNotEmpty()
