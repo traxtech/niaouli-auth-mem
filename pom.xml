@@ -6,7 +6,7 @@
     <version>0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>niaouli-auth-mem</name>
-    <description>In-memory implementation of Niaouli Auth Core (Java API for authentication and management of users, groups and organizational units)</description>
+    <description>In-memory implementation of Niaouli Auth (Java API for authentication and management of users, groups and organizational units)</description>
     <licenses>
         <license>
             <name>GNU Lesser General Public License, v3</name>
